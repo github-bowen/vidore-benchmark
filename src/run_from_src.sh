@@ -1,12 +1,39 @@
 python -m vidore_benchmark.cli.main evaluate-retriever \
     --model-class llava-onevision \
     --model-name llava-hf/llava-onevision-qwen2-0.5b-ov-hf \
-    --dataset-name vidore/docvqa_test_subsampled \
+    --collection-name vidore/vidore-benchmark-667173f98e70a1c0fa4db00d \
     --dataset-format qa \
-    --split test 
-    # --batch-query 4 \
-    # --batch-passage 4 \
-    # --batch-score 4
-    # --model-name test_retriever \
+    --split test \
+    --output-dir newOutput/
+
+# one line command:
+python -m vidore_benchmark.cli.main evaluate-retriever --model-class llava-onevision --model-name llava-hf/llava-onevision-qwen2-0.5b-ov-hf --collection-name vidore/vidore-benchmark-667173f98e70a1c0fa4db00d --dataset-format qa --split test --output-dir newOutput/ 
+
+
+
+python -m vidore_benchmark.cli.main evaluate-retriever \
+    --model-class blip \
+    --model-name Salesforce/blip-vqa-base \
+    --collection-name vidore/vidore-benchmark-667173f98e70a1c0fa4db00d \
+    --dataset-format qa \
+    --split test \
+    --output-dir newOutput/
+
+# one line command:
+python -m vidore_benchmark.cli.main evaluate-retriever --model-class blip --model-name Salesforce/blip-vqa-base --collection-name vidore/vidore-benchmark-667173f98e70a1c0fa4db00d --dataset-format qa --split test --output-dir newOutput/
+
+
+
+
+python -m vidore_benchmark.cli.main evaluate-retriever \
+    --model-class blip \
+    --model-name Salesforce/blip2-opt-2.7b \
+    --collection-name vidore/vidore-benchmark-667173f98e70a1c0fa4db00d \
+    --dataset-format qa \
+    --split test \
+    --output-dir newOutput/
+
+# one line command:
+python -m vidore_benchmark.cli.main evaluate-retriever --model-class blip --model-name Salesforce/blip2-opt-2.7b --collection-name vidore/vidore-benchmark-667173f98e70a1c0fa4db00d --dataset-format qa --split test --output-dir newOutput/
 
 # vidore/vidore-benchmark-667173f98e70a1c0fa4db00d

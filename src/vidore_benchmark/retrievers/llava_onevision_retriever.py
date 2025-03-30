@@ -112,12 +112,30 @@ class LlavaOnevisionRetriever(BaseVisionRetriever):
             # Make sure images are in RGB format
             processed_images = [image.convert("RGB") for image in passage_batch]
             
-            # Process image inputs with a default prompt
+            # Get the special image token used by the model
+            image_token_id = self.processor.tokenizer.get_vocab().get("<image>", None)
+            if image_token_id is None:
+                # Try other common image tokens if "<image>" isn't found
+                for token in ["<image>", "<img>", "<pix>", "<im_patch>", "<im_start>"]:
+                    image_token_id = self.processor.tokenizer.get_vocab().get(token)
+                    if image_token_id is not None:
+                        break
+            
+            # If we still don't have an image token, try to get it from the tokenizer's special tokens
+            if image_token_id is None:
+                # For Llava models, use this specific format
+                prompt = self.processor.tokenizer.bos_token + "<image>\nDescribe this image in detail."
+            else:
+                # Use the image token we found
+                prompt = f"{self.processor.tokenizer.bos_token}<image>\nDescribe this image in detail."
+            
+            # Process image inputs with the prompt that includes the image token
             inputs = self.processor(
                 images=processed_images,
-                text=["Describe this image in detail."] * len(processed_images),
+                text=[prompt] * len(processed_images),
                 return_tensors="pt",
-                padding=True
+                padding=True,
+                truncation=True
             ).to(self.device)
             
             # Forward pass
