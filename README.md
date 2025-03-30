@@ -9,3 +9,7 @@ In this fork, we have added custom retrievers for specific testing purposes. You
 ## Run in Colab
 
 You can run this benchmark in Google Colab using the following link: [Run in Colab](https://colab.research.google.com/drive/1YbxLDcbjrOwJC56gDXuA7fl31YkEyRsO?usp=sharing)
+
+## Results
+
+See folder `results`.
