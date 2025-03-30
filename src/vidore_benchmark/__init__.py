@@ -18,5 +18,6 @@ from .retrievers import (
     # Custom retrievers
     TestRetriever,
     BlipRetriever,
-    LlavaOnevisionRetriever
+    LlavaOnevisionRetriever,
+    LlavaInterleaveRetriever,
 )
