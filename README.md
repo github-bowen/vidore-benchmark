@@ -12,4 +12,4 @@ You can run this benchmark in Google Colab using the following link: [Run in Col
 
 ## Results
 
-See folder `results`.
+See folder [results](./results/).
