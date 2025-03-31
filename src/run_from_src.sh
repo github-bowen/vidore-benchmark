@@ -56,9 +56,12 @@ python -m vidore_benchmark.cli.main evaluate-retriever \
     --model-class jina-clip-v1 \
     --model-name jinaai/jina-clip-v1 \
     --image-segmentation \
+    --grid-rows 2 \
+    --grid-cols 2 \
     --dataset-name vidore/arxivqa_test_subsampled \
     --dataset-format qa \
     --split test \
     --output-dir segmentedOutput/
+    # --overlap 0 \
 
 # export LD_LIBRARY_PATH=/home/bowen/miniconda3/lib:$LD_LIBRARY_PATH 

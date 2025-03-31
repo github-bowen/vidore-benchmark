@@ -1,4 +1,3 @@
-import logging
 from typing import Dict
 
 import numpy as np
@@ -13,7 +12,8 @@ from mteb.evaluation.evaluators.utils import (
     top_k_accuracy,
 )
 
-logger = logging.getLogger(__name__)
+# Replace standard logging with loguru
+from loguru import logger
 
 
 class CustomRetrievalEvaluator:
@@ -66,20 +66,16 @@ class CustomRetrievalEvaluator:
         dict[str, float],
     ]:
         if ignore_identical_ids:
-            logger.debug(
-                "For evaluation, ``ignore_identical_ids=True`` is set to True, the evaluator will ignore "
-                "identical query and document ids."
-            )
+            logger.debug("For evaluation, ``ignore_identical_ids=True`` is set to True")
+            logger.debug("the evaluator will ignoreidentical query and document ids.")
             # Remove identical ids from results dict
             for qid, rels in results.items():
                 for pid in list(rels):
                     if qid == pid:
                         results[qid].pop(pid)
         else:
-            logger.debug(
-                "For evaluation, we DO NOT ignore identical query and document ids (default), please explicitly "
-                "set ``ignore_identical_ids=True`` to ignore this."
-            )
+            logger.debug("For evaluation, we DO NOT ignore identical query and document ids (default), ")
+            logger.debug("please explicitly set ``ignore_identical_ids=True`` to ignore this.")
 
         all_ndcgs, all_aps, all_recalls, all_precisions = {}, {}, {}, {}
 

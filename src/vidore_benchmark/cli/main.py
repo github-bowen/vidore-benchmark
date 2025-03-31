@@ -10,18 +10,21 @@ from dotenv import load_dotenv
 from tqdm import tqdm
 from transformers import set_seed
 
+# Replace standard logging with loguru
+from loguru import logger
+from vidore_benchmark.utils.logging_utils import setup_logging
+
 from vidore_benchmark.evaluation.interfaces import MetadataModel, ViDoReBenchmarkResults
 from vidore_benchmark.evaluation.vidore_evaluators import ViDoReEvaluatorQA
 from vidore_benchmark.evaluation.vidore_evaluators.vidore_evaluator_beir import ViDoReEvaluatorBEIR
 from vidore_benchmark.retrievers.base_vision_retriever import BaseVisionRetriever
 from vidore_benchmark.retrievers.registry_utils import load_vision_retriever_from_registry
 from vidore_benchmark.utils.data_utils import get_datasets_from_collection, process_dataset_with_segmentation
-from vidore_benchmark.utils.logging_utils import setup_logging
-
-logger = logging.getLogger(__name__)
 
 load_dotenv(override=True)
 set_seed(42)
+
+setup_logging(log_level="DEBUG")
 
 app = typer.Typer(
     help="""
@@ -104,9 +107,13 @@ def _get_metrics_from_vidore_evaluator(
 
 
 @app.callback()
-def main(log_level: Annotated[str, typer.Option("--log", help="Logging level")] = "warning"):
-    setup_logging(log_level)
-    logger.info("Logging level set to `%s`", log_level)
+def main(
+    log_level: Annotated[str, typer.Option("--log", help="Logging level")] = "warning",
+    log_file: Annotated[Optional[str], typer.Option("--log-file", help="Optional log file path")] = None,
+):
+    # setup_logging(log_level, log_file)
+    logger.info("Vidore Benchmark application started")
+    # logger.info(f"Logging level set to {log_level}")
 
 
 @app.command()
@@ -177,6 +184,7 @@ def evaluate_retriever(
 
     # Add segmentation info to model_id if enabled
     if image_segmentation:
+        logger.info(f"Using image segmentation with grid size {grid_rows}x{grid_cols} and overlap {overlap}")
         model_id += f"_seg_{grid_rows}x{grid_cols}"
         if overlap > 0:
             model_id += f"_overlap_{int(overlap*100)}"

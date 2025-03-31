@@ -1,4 +1,4 @@
-import logging
+from loguru import logger
 import os
 from pathlib import Path
 from typing import List, TypeVar, Tuple, Optional, Dict, Any, Union
@@ -8,10 +8,10 @@ from datasets import Dataset as HfDataset
 from torch.utils.data import Dataset as TorchDataset
 from PIL import Image
 import numpy as np
+from tqdm import tqdm
 
 T = TypeVar("T")
 
-logger = logging.getLogger(__name__)
 
 
 class ListDataset(TorchDataset[T]):
@@ -142,7 +142,9 @@ def process_dataset_with_segmentation(
     overlap: float = 0.0
 ) -> HfDataset:
     """
-    Process a dataset by segmenting images in the specified column.
+    Process a dataset by segmenting images in the specified column and expanding each row
+    into multiple rows - one for each segment. All segments from the same image are
+    tracked with a unique original_image_id.
     
     Args:
         ds: The dataset containing images to segment
@@ -151,34 +153,80 @@ def process_dataset_with_segmentation(
         overlap: Percentage of overlap between segments (0.0 to 0.5)
         
     Returns:
-        Processed dataset with image segments
+        Processed dataset with expanded image segments
     """
     if image_column not in ds.column_names:
         raise ValueError(f"Column '{image_column}' not found in dataset.")
     
-    def segment_row(example: Dict[str, Any]) -> Dict[str, Any]:
-        """Process a single row to segment its image."""
-        result = dict(example)
+    # Create a list to hold all new rows
+    all_rows = []
+    
+    # Keep track of dataset size for progress
+    total_images = len(ds)
+    total_segments = 0
+    
+    # Process each row in the dataset
+    for idx, example in tqdm(enumerate(ds), total=total_images, desc="Segmenting images"):
         image = example[image_column]
         
         # Skip if not an image
         if not isinstance(image, (Image.Image, np.ndarray)):
             logger.warning(f"Skipping non-image data in column '{image_column}'")
-            return result
+            all_rows.append(example)
+            continue
         
         # Segment the image
         segments = segment_image(image, grid_size=grid_size, overlap=overlap)
         
-        # Replace the original image with a list of segments
-        result[image_column] = segments[0]  # Store first segment as main image
-        result[f"{image_column}_segments"] = segments  # Store all segments
-        result["segment_count"] = len(segments)
-        result["grid_size"] = grid_size
+        # Generate a unique ID for the original image
+        original_image_id = f"img_{idx}"
         
-        return result
+        # Create one row for each segment
+        for seg_idx, segment in enumerate(segments):
+            # Create a copy of the original row
+            new_row = dict(example)
+            
+            # Replace the image with the segment
+            new_row[image_column] = segment
+            
+            # Add metadata
+            new_row["original_image_id"] = original_image_id
+            new_row["segment_idx"] = seg_idx
+            new_row["total_segments"] = len(segments)
+            new_row["grid_size"] = grid_size
+            
+            # Add to our collection
+            all_rows.append(new_row)
+            total_segments += 1
     
-    # Apply segmentation to each row
-    processed_ds = ds.map(segment_row)
+    # Create a new dataset from all rows
+    processed_ds = HfDataset.from_list(all_rows)
     
-    logger.info(f"Processed {len(processed_ds)} images with segmentation ({grid_size[0]}x{grid_size[1]} grid)")
+    logger.info(f"Processed {total_images} images into {total_segments} segments ({grid_size[0]}x{grid_size[1]} grid)")
+    logger.debug(f"Before segmentation: dataset shape: {ds.shape}")
+    logger.debug(f"After segmentation: dataset shape: {processed_ds.shape}")
+    
     return processed_ds
+
+# Define a helper function to map original segments to parent images
+def get_parent_image_mapping(ds: HfDataset) -> Dict[str, List[int]]:
+    """
+    Create a mapping from original image IDs to the indices of their segments in the dataset.
+    
+    Args:
+        ds: The segmented dataset with original_image_id field
+        
+    Returns:
+        Dictionary mapping original image IDs to list of segment indices
+    """
+    if "original_image_id" not in ds.column_names:
+        raise ValueError("Dataset does not appear to be segmented (no 'original_image_id' column found)")
+    
+    mapping = {}
+    for idx, row in enumerate(ds):
+        image_id = row["original_image_id"]
+        if image_id not in mapping:
+            mapping[image_id] = []
+        mapping[image_id].append(idx)
+    
+    return mapping
