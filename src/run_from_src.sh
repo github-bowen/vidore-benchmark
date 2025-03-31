@@ -50,3 +50,14 @@ python -m vidore_benchmark.cli.main evaluate-retriever \
 python -m vidore_benchmark.cli.main evaluate-retriever --model-class blip --model-name Salesforce/blip2-opt-2.7b --collection-name vidore/vidore-benchmark-667173f98e70a1c0fa4db00d --dataset-format qa --split test --output-dir newOutput/
 
 # vidore/vidore-benchmark-667173f98e70a1c0fa4db00d
+
+
+python -m vidore_benchmark.cli.main evaluate-retriever \
+    --model-class jina-clip-v1 \
+    --model-name jinaai/jina-clip-v1 \
+    --dataset-name vidore/arxivqa_test_subsampled \
+    --dataset-format qa \
+    --split test \
+    --output-dir newOutput/
+
+# export LD_LIBRARY_PATH=/home/bowen/miniconda3/lib:$LD_LIBRARY_PATH 
