@@ -20,3 +20,4 @@ from .test_retriever import TestRetriever
 from .blip_retriever import BlipRetriever
 from .llava_onevision_retriever import LlavaOnevisionRetriever
 from .llava_interleave_retriever import LlavaInterleaveRetriever
+from .blip2_retriever import Blip2Retriever
