@@ -4,6 +4,8 @@
 /logs/
 /data/**
 /outputs/
+newOutput/
+segmentedOutput/
 
 src/outputs/
 src/newOutput/
