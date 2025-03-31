@@ -1,8 +1,8 @@
-# VLMs Analysis on Vidore Benchmark - TU Delft Course Project
+# Detailed Analysis of VLMs for Cross-Modal Document Retrieval
 
 ## About This Project
 
-This project was developed for the TU Delft **DSAIT4050 Information Retrieval course** (2025). It extends the original Vidore Benchmark with additional retrievers and significant code modifications to enhance retrieval performance.
+This project was developed for the TU Delft **DSAIT4050 Information Retrieval course** (2025). It conducts a comprehensive analysis of various Vision-Language Models (VLMs) in cross-modal document retrieval tasks using the Vidore Benchmark. Our work extends the original benchmark with additional retrievers and significant code modifications to enable more thorough performance evaluation.
 
 ## Main Contributions
 
