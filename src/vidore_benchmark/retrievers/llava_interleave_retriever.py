@@ -60,6 +60,35 @@ class LlavaInterleaveRetriever(BaseVisionRetriever):
         # Create a small dummy image for text-only queries
         self.dummy_image = Image.new('RGB', (32, 32), (128, 128, 128))
 
+    def __getstate__(self):
+        """Custom method for pickle serialization"""
+        state = self.__dict__.copy()
+        # Remove non-serializable components
+        state.pop('model', None)
+        state.pop('processor', None)
+        state.pop('dummy_image', None)
+        return state
+
+    def __setstate__(self, state):
+        """Custom method for pickle deserialization"""
+        self.__dict__.update(state)
+        # Reinitialize the non-serializable components
+        self.model = LlavaForConditionalGeneration.from_pretrained(
+            self.pretrained_model_name_or_path,
+            torch_dtype=torch.bfloat16,
+            device_map=self.device,
+            attn_implementation="flash_attention_2" if is_flash_attn_2_available() else None,
+        ).eval()
+        
+        self.processor = AutoProcessor.from_pretrained(self.pretrained_model_name_or_path)
+        
+        # Set required processor attributes to fix the warning
+        self.processor.patch_size = 14  # For Siglip Vision model used in llava-interleave
+        self.processor.vision_feature_select_strategy = "patch"
+        
+        # Create a small dummy image for text-only queries
+        self.dummy_image = Image.new('RGB', (32, 32), (128, 128, 128))
+
     def get_embedding(self, model_output, normalize=True):
         """Extract embeddings from the model output"""
         # Get the last hidden state
@@ -84,12 +113,11 @@ class LlavaInterleaveRetriever(BaseVisionRetriever):
         ):
             query_batch = cast(List[str], query_batch)
             
-            batch_inputs = []
-            # Process each query individually to ensure consistent handling
+            # Create a batch of conversations
+            conversations = []
             for query in query_batch:
                 # Create a conversation with the query and a tiny dummy image
-                # This prevents the "NoneType has no attribute shape" error
-                conversation = [
+                conversations.append([
                     {
                         "role": "user",
                         "content": [
@@ -98,32 +126,30 @@ class LlavaInterleaveRetriever(BaseVisionRetriever):
                             {"type": "text", "text": f"Query: {query}"}
                         ],
                     }
-                ]
-                # Apply chat template
-                prompt = self.processor.apply_chat_template(conversation, add_generation_prompt=True)
-                
-                # Process with the dummy image
-                inputs = self.processor(
-                    images=self.dummy_image,
-                    text=prompt,
-                    return_tensors="pt",
-                    padding=True,
-                ).to(self.device)
-                
-                batch_inputs.append(inputs)
+                ])
             
-            # Process each query with its inputs
-            for inputs in batch_inputs:
-                with torch.no_grad():
-                    outputs = self.model(
-                        **inputs, 
-                        output_hidden_states=True,
-                        return_dict=True
-                    )
-                    
-                    # Get embeddings (single item)
-                    embedding = self.get_embedding(outputs)
-                    list_emb_queries.append(embedding[0].cpu())
+            # Apply chat template to all conversations
+            prompts = [self.processor.apply_chat_template(conv, add_generation_prompt=True) for conv in conversations]
+            
+            # Process all queries in the batch at once
+            inputs = self.processor(
+                images=[self.dummy_image] * len(query_batch),
+                text=prompts,
+                return_tensors="pt",
+                padding=True,
+            ).to(self.device)
+            
+            # Forward pass for the whole batch
+            with torch.no_grad():
+                outputs = self.model(
+                    **inputs, 
+                    output_hidden_states=True,
+                    return_dict=True
+                )
+                
+                # Get embeddings for the batch
+                embeddings = self.get_embedding(outputs)
+                list_emb_queries.extend(embeddings.cpu())
 
         return list_emb_queries
 
@@ -142,10 +168,10 @@ class LlavaInterleaveRetriever(BaseVisionRetriever):
             # Make sure images are in RGB format
             processed_images = [image.convert("RGB") for image in passage_batch]
             
-            # Process each image separately with the appropriate conversation structure
-            for img in processed_images:
-                # Create a conversation with an image and a descriptive prompt
-                conversation = [
+            # Create a standard conversation template for all images
+            conversations = []
+            for _ in range(len(processed_images)):
+                conversations.append([
                     {
                         "role": "user",
                         "content": [
@@ -154,30 +180,30 @@ class LlavaInterleaveRetriever(BaseVisionRetriever):
                             {"type": "text", "text": "Describe this image in detail."},
                         ],
                     }
-                ]
+                ])
+            
+            # Apply chat template to all conversations
+            prompts = [self.processor.apply_chat_template(conv, add_generation_prompt=True) for conv in conversations]
+            
+            # Process all images in the batch at once
+            inputs = self.processor(
+                images=processed_images,
+                text=prompts,
+                return_tensors="pt",
+                padding=True,
+            ).to(self.device)
+            
+            # Forward pass for the whole batch
+            with torch.no_grad():
+                outputs = self.model(
+                    **inputs,
+                    output_hidden_states=True,
+                    return_dict=True
+                )
                 
-                # Apply chat template to format the prompt
-                prompt = self.processor.apply_chat_template(conversation, add_generation_prompt=True)
-                
-                # Process image input with the prompt
-                inputs = self.processor(
-                    images=img,
-                    text=prompt,
-                    return_tensors="pt",
-                    padding=True,
-                ).to(self.device)
-                
-                # Forward pass
-                with torch.no_grad():
-                    outputs = self.model(
-                        **inputs,
-                        output_hidden_states=True,
-                        return_dict=True
-                    )
-                    
-                    # Get embedding for this single image
-                    embedding = self.get_embedding(outputs)
-                    list_emb_passages.append(embedding[0].cpu())
+                # Get embeddings for the batch
+                embeddings = self.get_embedding(outputs)
+                list_emb_passages.extend(embeddings.cpu())
 
         return list_emb_passages
 
