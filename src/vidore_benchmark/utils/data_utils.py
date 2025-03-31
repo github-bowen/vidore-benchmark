@@ -1,11 +1,13 @@
 import logging
 import os
 from pathlib import Path
-from typing import List, TypeVar
+from typing import List, TypeVar, Tuple, Optional, Dict, Any, Union
 
 import huggingface_hub
 from datasets import Dataset as HfDataset
 from torch.utils.data import Dataset as TorchDataset
+from PIL import Image
+import numpy as np
 
 T = TypeVar("T")
 
@@ -73,3 +75,110 @@ def get_datasets_from_collection(collection_name: str) -> List[str]:
         collection = huggingface_hub.get_collection(collection_name)
         dataset_names = [dataset_item.item_id for dataset_item in collection.items]
     return dataset_names
+
+
+def segment_image(
+    image: Union[Image.Image, np.ndarray], 
+    grid_size: Tuple[int, int] = (2, 2),
+    overlap: float = 0.0
+) -> List[Image.Image]:
+    """
+    Split an image into a grid of segments with optional overlap.
+    
+    Args:
+        image: PIL Image or numpy array to segment
+        grid_size: Tuple of (rows, cols) defining the grid
+        overlap: Percentage of overlap between segments (0.0 to 0.5)
+        
+    Returns:
+        List of PIL Image segments
+    """
+    if not isinstance(image, Image.Image):
+        if isinstance(image, np.ndarray):
+            image = Image.fromarray(image)
+        else:
+            raise ValueError("Image must be a PIL Image or numpy array")
+    
+    if overlap < 0 or overlap >= 0.5:
+        raise ValueError("Overlap must be between 0 and 0.5")
+    
+    width, height = image.size
+    rows, cols = grid_size
+    
+    # Calculate segment dimensions with overlap
+    segment_width = width // cols
+    segment_height = height // rows
+    
+    # Calculate overlap in pixels
+    overlap_x = int(segment_width * overlap)
+    overlap_y = int(segment_height * overlap)
+    
+    # Adjust segment size to include overlap
+    segment_width_with_overlap = segment_width + 2 * overlap_x
+    segment_height_with_overlap = segment_height + 2 * overlap_y
+    
+    segments = []
+    
+    for i in range(rows):
+        for j in range(cols):
+            # Calculate starting position with overlap
+            left = max(0, j * segment_width - overlap_x)
+            upper = max(0, i * segment_height - overlap_y)
+            
+            # Calculate ending position with overlap
+            right = min(width, left + segment_width_with_overlap)
+            lower = min(height, upper + segment_height_with_overlap)
+            
+            # Crop segment
+            segment = image.crop((left, upper, right, lower))
+            segments.append(segment)
+    
+    return segments
+
+def process_dataset_with_segmentation(
+    ds: HfDataset, 
+    image_column: str = "image",
+    grid_size: Tuple[int, int] = (2, 2),
+    overlap: float = 0.0
+) -> HfDataset:
+    """
+    Process a dataset by segmenting images in the specified column.
+    
+    Args:
+        ds: The dataset containing images to segment
+        image_column: The column name containing images
+        grid_size: Tuple of (rows, cols) defining the grid
+        overlap: Percentage of overlap between segments (0.0 to 0.5)
+        
+    Returns:
+        Processed dataset with image segments
+    """
+    if image_column not in ds.column_names:
+        raise ValueError(f"Column '{image_column}' not found in dataset.")
+    
+    def segment_row(example: Dict[str, Any]) -> Dict[str, Any]:
+        """Process a single row to segment its image."""
+        result = dict(example)
+        image = example[image_column]
+        
+        # Skip if not an image
+        if not isinstance(image, (Image.Image, np.ndarray)):
+            logger.warning(f"Skipping non-image data in column '{image_column}'")
+            return result
+        
+        # Segment the image
+        segments = segment_image(image, grid_size=grid_size, overlap=overlap)
+        
+        # Replace the original image with a list of segments
+        result[image_column] = segments[0]  # Store first segment as main image
+        result[f"{image_column}_segments"] = segments  # Store all segments
+        result["segment_count"] = len(segments)
+        result["grid_size"] = grid_size
+        
+        return result
+    
+    # Apply segmentation to each row
+    processed_ds = ds.map(segment_row)
+    
+    logger.info(f"Processed {len(processed_ds)} images with segmentation ({grid_size[0]}x{grid_size[1]} grid)")
+    return processed_ds

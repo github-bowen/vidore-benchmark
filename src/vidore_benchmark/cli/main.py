@@ -2,7 +2,7 @@ import logging
 from datetime import datetime
 from importlib.metadata import version
 from pathlib import Path
-from typing import Annotated, Dict, List, Optional, cast
+from typing import Annotated, Dict, List, Optional, Tuple, cast
 
 import typer
 from datasets import Dataset, load_dataset
@@ -15,7 +15,7 @@ from vidore_benchmark.evaluation.vidore_evaluators import ViDoReEvaluatorQA
 from vidore_benchmark.evaluation.vidore_evaluators.vidore_evaluator_beir import ViDoReEvaluatorBEIR
 from vidore_benchmark.retrievers.base_vision_retriever import BaseVisionRetriever
 from vidore_benchmark.retrievers.registry_utils import load_vision_retriever_from_registry
-from vidore_benchmark.utils.data_utils import get_datasets_from_collection
+from vidore_benchmark.utils.data_utils import get_datasets_from_collection, process_dataset_with_segmentation
 from vidore_benchmark.utils.logging_utils import setup_logging
 
 logger = logging.getLogger(__name__)
@@ -56,16 +56,32 @@ def _get_metrics_from_vidore_evaluator(
     batch_score: Optional[int] = None,
     dataloader_prebatch_query: Optional[int] = None,
     dataloader_prebatch_passage: Optional[int] = None,
+    image_segmentation: Optional[bool] = False,
+    grid_size: Optional[Tuple[int, int]] = (2, 2),
+    overlap: Optional[float] = 0.0,
 ) -> Dict[str, Dict[str, Optional[float]]]:
     """
     Rooter function to get metrics from the ViDoRe evaluator depending on the dataset format.
     """
     if dataset_format.lower() == "qa":
         ds = cast(Dataset, load_dataset(dataset_name, split=split))
+        
+        # Apply image segmentation if requested
+        if image_segmentation:
+            logger.info(f"Applying image segmentation with grid size {grid_size} and overlap {overlap}")
+            ds = process_dataset_with_segmentation(ds, grid_size=grid_size, overlap=overlap)
+            
         vidore_evaluator = ViDoReEvaluatorQA(vision_retriever)
     elif dataset_format.lower() == "beir":
+        ds_corpus = cast(Dataset, load_dataset(dataset_name, name="corpus", split=split))
+        
+        # Apply image segmentation to corpus if requested
+        if image_segmentation:
+            logger.info(f"Applying image segmentation with grid size {grid_size} and overlap {overlap}")
+            ds_corpus = process_dataset_with_segmentation(ds_corpus, grid_size=grid_size, overlap=overlap)
+            
         ds = {
-            "corpus": cast(Dataset, load_dataset(dataset_name, name="corpus", split=split)),
+            "corpus": ds_corpus,
             "queries": cast(Dataset, load_dataset(dataset_name, name="queries", split=split)),
             "qrels": cast(Dataset, load_dataset(dataset_name, name="qrels", split=split)),
         }
@@ -129,6 +145,18 @@ def evaluate_retriever(
         int, typer.Option(help="Number of workers for dataloader in retrievers, when supported")
     ] = 0,
     output_dir: Annotated[str, typer.Option(help="Directory where to save the metrics")] = "outputs",
+    image_segmentation: Annotated[
+        bool, typer.Option(help="Whether to apply image segmentation when loading datasets")
+    ] = False,
+    grid_rows: Annotated[
+        int, typer.Option(help="Number of rows for image segmentation grid")
+    ] = 2,
+    grid_cols: Annotated[
+        int, typer.Option(help="Number of columns for image segmentation grid")
+    ] = 2,
+    overlap: Annotated[
+        float, typer.Option(help="Overlap percentage between segments (0.0-0.5)")
+    ] = 0.0,
 ):
     """
     Evaluate a retriever on a given dataset or dataset collection.
@@ -146,6 +174,12 @@ def evaluate_retriever(
         num_workers=num_workers,
     )
     model_id = _sanitize_model_id(model_class, model_name=model_name)
+
+    # Add segmentation info to model_id if enabled
+    if image_segmentation:
+        model_id += f"_seg_{grid_rows}x{grid_cols}"
+        if overlap > 0:
+            model_id += f"_overlap_{int(overlap*100)}"
 
     dataset_names: List[str] = []
     if dataset_name is not None:
@@ -173,6 +207,9 @@ def evaluate_retriever(
             batch_score=batch_score,
             dataloader_prebatch_query=dataloader_prebatch_query,
             dataloader_prebatch_passage=dataloader_prebatch_passage,
+            image_segmentation=image_segmentation,
+            grid_size=(grid_rows, grid_cols),
+            overlap=overlap,
         )
         metrics_all.update(metrics)
 
