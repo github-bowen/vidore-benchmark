@@ -8,8 +8,9 @@ from datasets import Dataset
 from vidore_benchmark.evaluation.vidore_evaluators.base_vidore_evaluator import BaseViDoReEvaluator
 from vidore_benchmark.retrievers.base_vision_retriever import BaseVisionRetriever
 from vidore_benchmark.retrievers.bm25_retriever import BM25Retriever
-from vidore_benchmark.utils.data_utils import deduplicate_dataset_rows
-
+from vidore_benchmark.utils.data_utils import deduplicate_dataset_rows, get_parent_image_mapping
+from vidore_benchmark.evaluation.segment_utils import process_segment_scores
+from loguru import logger
 
 class ViDoReEvaluatorQA(BaseViDoReEvaluator):
     """
@@ -35,6 +36,7 @@ class ViDoReEvaluatorQA(BaseViDoReEvaluator):
         batch_score: Optional[int] = None,
         dataloader_prebatch_query: Optional[int] = None,
         dataloader_prebatch_passage: Optional[int] = None,
+        combine_method: str = "max",
         **kwargs,
     ) -> Dict[str, Optional[float]]:
         """
@@ -49,7 +51,8 @@ class ViDoReEvaluatorQA(BaseViDoReEvaluator):
         ds = ds.map(lambda example, idx: {self.id_column: idx}, with_indices=True)
 
         ds_passages = ds.remove_columns(
-            [col for col in ds.column_names if col not in [self.passage_column, self.image_hash_column, self.id_column]]
+            [col for col in ds.column_names if col not in [self.passage_column, self.image_hash_column, self.id_column, 
+                                                          "original_image_id", "segment_idx", "total_segments", "grid_size"]]
         )
         ds_queries = ds.remove_columns(
             [col for col in ds.column_names if col not in [self.query_column, self.id_column]]
@@ -95,6 +98,41 @@ class ViDoReEvaluatorQA(BaseViDoReEvaluator):
             passage_embeddings=passage_embeddings,
             batch_size=batch_score,
         )
+        
+        # Check if the dataset contains segmented images
+        if "original_image_id" in ds_passages.column_names:
+            logger.info(f"Detected segmented images. Processing segment scores with {combine_method} method...")
+            
+            # Create a mapping from original image IDs to segment indices
+            parent_mapping = get_parent_image_mapping(ds_passages)
+            
+            # Process the scores to combine segments from the same original image
+            original_scores = scores
+            scores = process_segment_scores(
+                scores=scores, 
+                parent_mapping=parent_mapping,
+                combine_method=combine_method  # Use the provided combine method
+            )
+            
+            logger.info(f"Processed scores from {original_scores.shape} to {scores.shape} after combining segments using {combine_method} method")
+            
+            # Create a de-segmented version of the dataset for producing results
+            # We need to filter the dataset to only keep one row per original image
+            original_image_ids = list(parent_mapping.keys())
+            ds_filtered = ds.filter(
+                lambda example: example.get("original_image_id") in original_image_ids and 
+                               example.get("segment_idx", 0) == 0  # Keep only the first segment of each image
+            )
+            ds = ds_filtered
+
+            # log out current dataset shape
+            logger.debug(f"Original dataset shape: {ds_passages.shape}")
+            logger.debug(f"Filtered dataset shape: {ds.shape}")
+            
+            # Create new passage dataset with original images only
+            ds_passages = ds.remove_columns(
+                [col for col in ds.column_names if col not in [self.passage_column, self.image_hash_column, self.id_column]]
+            )
 
         # Get the relevant passages and results
         relevant_docs, results = self._get_relevant_docs_results(
