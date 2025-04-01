@@ -62,6 +62,7 @@ def _get_metrics_from_vidore_evaluator(
     image_segmentation: Optional[bool] = False,
     grid_size: Optional[Tuple[int, int]] = (2, 2),
     overlap: Optional[float] = 0.0,
+    combine_method: Optional[str] = "max",
 ) -> Dict[str, Dict[str, Optional[float]]]:
     """
     Rooter function to get metrics from the ViDoRe evaluator depending on the dataset format.
@@ -101,6 +102,7 @@ def _get_metrics_from_vidore_evaluator(
             batch_score=batch_score,
             dataloader_prebatch_query=dataloader_prebatch_query,
             dataloader_prebatch_passage=dataloader_prebatch_passage,
+            combine_method=combine_method,  # Pass the combine method to evaluator
         )
     }
     return metrics
@@ -164,6 +166,9 @@ def evaluate_retriever(
     overlap: Annotated[
         float, typer.Option(help="Overlap percentage between segments (0.0-0.5)")
     ] = 0.0,
+    combine_method: Annotated[
+        str, typer.Option(help="Method to combine segment scores ('max', 'avg', 'sum')")
+    ] = "max",
 ):
     """
     Evaluate a retriever on a given dataset or dataset collection.
@@ -218,10 +223,11 @@ def evaluate_retriever(
             image_segmentation=image_segmentation,
             grid_size=(grid_rows, grid_cols),
             overlap=overlap,
+            combine_method=combine_method,
         )
         metrics_all.update(metrics)
 
-        print(f"nDCG@5 on {dataset_name}: {metrics[dataset_name]['ndcg_at_5']}")
+        logger.info(f"nDCG@5 on {dataset_name}: {metrics[dataset_name]['ndcg_at_5']}")
 
         results = ViDoReBenchmarkResults(
             metadata=MetadataModel(
@@ -246,7 +252,7 @@ def evaluate_retriever(
     with open(str(savepath_results_merged), "w", encoding="utf-8") as f:
         f.write(results_merged.model_dump_json(indent=4))
 
-    print(f"ViDoRe Benchmark results saved to `{savepath_results_merged}`")
+    logger.info(f"ViDoRe Benchmark results saved to `{savepath_results_merged}`")
 
 
 if __name__ == "__main__":

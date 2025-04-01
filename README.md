@@ -29,6 +29,10 @@ This fork includes image segmentation functionality that enhances retrieval perf
 - `--grid-rows`: Number of rows for dividing the image (default: 2)
 - `--grid-cols`: Number of columns for dividing the image (default: 2)
 - `--overlap`: Overlap percentage between segments, ranging from 0.0 to 0.5 (default: 0.0)
+- `--combine-method`: Method to combine segment scores (default: "max")
+  - `max`: Uses the maximum score across all segments of an image
+  - `avg`: Uses the average score across all segments
+  - `sum`: Sums up scores from all segments
 
 Example usage:
 
@@ -39,6 +43,7 @@ python -m vidore_benchmark.cli.main evaluate-retriever \
     --image-segmentation \
     --grid-rows 2 \
     --grid-cols 2 \
+    --combine-method max \
     --dataset-name vidore/arxivqa_test_subsampled \
     --dataset-format qa \
     --split test \
