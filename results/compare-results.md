@@ -6,13 +6,14 @@ Models:
 
 ```python
 {
+    'blip2-flan-t5-xl',
     'blip_Salesforce_blip-vqa-base',
     'clip_openai_clip-vit-base-patch32',
     'jina-clip-v1_jinaai_jina-clip-v1',
     'llava-interleave_llava-hf_llava-interleave-qwen-0.5b-hf',
-    'siglip_google_siglip-so400m-patch14-384',
+    'scan',
     'vit_google_vit-base-patch16-224-in21k'
- }
+}
 ```
 
 Performance Changes (After segmenting inputs)
@@ -27,3 +28,8 @@ Performance Changes (After segmenting inputs)
 | vit_google_vit-base-patch16-224-in21k             | 57.560575  | 72.566430  | 14.634766  | 32.413363  | 19.540038 | 31.289937  |
 
 ![improvement-hetmap](../figs/improvement-heatmap.png)
+
+
+
+
+
