@@ -26,4 +26,4 @@ Performance Changes (After segmenting inputs)
 | siglip_google_siglip-so400m-patch14-384           | -6.677956  | -7.011335  | -6.052978  | -6.636861  | -5.515351 | -6.404461  |
 | vit_google_vit-base-patch16-224-in21k             | 57.560575  | 72.566430  | 14.634766  | 32.413363  | 19.540038 | 31.289937  |
 
-![improvement-hetmap](../figs/improvement-hetmap.png)
+![improvement-hetmap](../figs/improvement-heatmap.png)
