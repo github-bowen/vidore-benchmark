@@ -27,4 +27,6 @@ Performance Changes (After segmenting inputs)
 | llava-interleave_llava-hf_llava-interleave-qwe... | -19.474638 | -16.147069 | -18.619666 | -16.479845 | -8.349648 | -10.328760 |
 | vit_google_vit-base-patch16-224-in21k             | 57.560575  | 72.566430  | 14.634766  | 32.413363  | 19.540038 | 31.289937  |
 
-![improvement-heatmap](../figs/improvement-heatmap.png)
+![improvement-heatmap](../figs/exp2/improvement-heatmap.png)
+
+![improvement-heatmap](../figs/exp2/improvement-by-datasets.png)
