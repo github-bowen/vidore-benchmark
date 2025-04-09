@@ -1,0 +1,9 @@
+| Model                                                           |   ArxivQ |   DocQ |   InfoQ |   TabF |   TATQ |   Shift |   AI |   Energy |   Gov. |   Health |
+|:----------------------------------------------------------------|---------:|-------:|--------:|-------:|-------:|--------:|-----:|---------:|-------:|---------:|
+| blip2-flan-t5-xl_seg_2x2                                        |    0.898 |  0.65  |       0 |      0 |      0 |       0 |    0 |        0 |      0 |        0 |
+| blip_Salesforce_blip-vqa-base_seg_2x2                           |    0.564 |  0.553 |       0 |      0 |      0 |       0 |    0 |        0 |      0 |        0 |
+| clip_openai_clip-vit-base-patch32_seg_2x2                       |    7.594 |  4.75  |       0 |      0 |      0 |       0 |    0 |        0 |      0 |        0 |
+| jina-clip-v1_jinaai_jina-clip-v1_seg_2x2                        |   29.132 | 21.551 |       0 |      0 |      0 |       0 |    0 |        0 |      0 |        0 |
+| llava-interleave_llava-hf_llava-interleave-qwen-0.5b-hf_seg_2x2 |    0.277 |  1.294 |       0 |      0 |      0 |       0 |    0 |        0 |      0 |        0 |
+| siglip_google_siglip-so400m-patch14-384_seg_2x2                 |   38.36  | 26.381 |       0 |      0 |      0 |       0 |    0 |        0 |      0 |        0 |
+| vit_google_vit-base-patch16-224-in21k_seg_2x2                   |    1.002 |  0.472 |       0 |      0 |      0 |       0 |    0 |        0 |      0 |        0 |
