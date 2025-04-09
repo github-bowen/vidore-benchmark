@@ -1,5 +1,6 @@
 import os
 import json
+from sys import stderr
 import pandas as pd
 from tabulate import tabulate
 from typing import Dict, List, Any
@@ -30,7 +31,7 @@ def extract_metrics(model_name: str) -> Dict[str, Dict[str, float]]:
     metrics_file = os.path.join(RESULTS_DIR, model_name, "merged_dataset_metrics.json")
     
     if not os.path.exists(metrics_file):
-        print(f"Warning: No merged_dataset_metrics.json found for {model_name}")
+        print(f"Warning: No merged_dataset_metrics.json found for {model_name}", file=stderr)
         return {}
     
     with open(metrics_file, 'r') as f:
@@ -119,7 +120,7 @@ def main():
         df = df.rename(columns=readable_names)
         
         # Format the values to 4 decimal places
-        formatted_df = df.applymap(lambda x: f"{x:.2f}")
+        formatted_df = df.map(lambda x: f"{x:.2f}")
         
         # Print table using tabulate for nice formatting
         print(tabulate(formatted_df, headers='keys', tablefmt='pretty'))
@@ -128,6 +129,7 @@ def main():
         df.to_csv(f"./exp2-results/{metric}_results.csv")
         df.to_markdown(f"./exp2-results/{metric}_results.md")
         print(f"Saved to {metric}_results.csv")
+        print(f"Saved to {metric}_results.md")
 
 if __name__ == "__main__":
     main()

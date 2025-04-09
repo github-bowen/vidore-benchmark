@@ -6,6 +6,7 @@
 /outputs/
 newOutput/
 segmentedOutput/
+.vs
 
 src/outputs/
 src/newOutput/
