@@ -10,17 +10,18 @@ RESULTS_DIR = "./segmented"
 
 # Define all 10 expected datasets
 EXPECTED_DATASETS = [
-    "arxivqa_test_subsampled",  # ArxivQ
-    "docvqa_test_subsampled",   # DocQ
-    "infographicvqa_test_subsampled",  # InfoQ
-    "tabfact_test_subsampled",  # TabF
-    "tatqa_test_subsampled",    # TATQ
-    "shift_test_subsampled",    # Shift
-    "ai_test_subsampled",       # AI
-    "energy_test_subsampled",   # Energy
-    "government_test_subsampled", # Gov.
-    "health_test_subsampled"    # Health
+    "arxivqa_test_subsampled",
+    "docvqa_test_subsampled",
+    "infovqa_test_subsampled",
+    "tabfquad_test_subsampled",
+    "tatdqa_test",
+    "shiftproject_test",
+    "syntheticDocQA_artificial_intelligence_test",
+    "syntheticDocQA_energy_test",
+    "syntheticDocQA_government_reports_test",
+    "syntheticDocQA_healthcare_industry_test"
 ]
+    
 
 def get_model_names() -> List[str]:
     """Get a list of model names from the segmented directory."""
@@ -108,14 +109,14 @@ def main():
         readable_names = {
             "arxivqa_test_subsampled": "ArxivQ",
             "docvqa_test_subsampled": "DocQ",
-            "infographicvqa_test_subsampled": "InfoQ",
-            "tabfact_test_subsampled": "TabF",
-            "tatqa_test_subsampled": "TATQ",
-            "shift_test_subsampled": "Shift",
-            "ai_test_subsampled": "AI",
-            "energy_test_subsampled": "Energy",
-            "government_test_subsampled": "Gov.",
-            "health_test_subsampled": "Health"
+            "infovqa_test_subsampled": "InfoQ",
+            "tabfquad_test_subsampled": "TabF",
+            "tatdqa_test": "TATQ",
+            "shiftproject_test": "Shift",
+            "syntheticDocQA_artificial_intelligence_test": "AI",
+            "syntheticDocQA_energy_test": "Energy",
+            "syntheticDocQA_government_reports_test": "Gov.",
+            "syntheticDocQA_healthcare_industry_test": "Health"
         }
         df = df.rename(columns=readable_names)
         

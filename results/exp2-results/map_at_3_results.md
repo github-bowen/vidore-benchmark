@@ -1,9 +1,9 @@
-| Model                                                           |   ArxivQ |   DocQ |   InfoQ |   TabF |   TATQ |   Shift |   AI |   Energy |   Gov. |   Health |
-|:----------------------------------------------------------------|---------:|-------:|--------:|-------:|-------:|--------:|-----:|---------:|-------:|---------:|
-| blip2-flan-t5-xl_seg_2x2                                        |    0.633 |  0.517 |       0 |      0 |      0 |       0 |    0 |        0 |      0 |        0 |
-| blip_Salesforce_blip-vqa-base_seg_2x2                           |    0.333 |  0.333 |       0 |      0 |      0 |       0 |    0 |        0 |      0 |        0 |
-| clip_openai_clip-vit-base-patch32_seg_2x2                       |    6.1   |  3.769 |       0 |      0 |      0 |       0 |    0 |        0 |      0 |        0 |
-| jina-clip-v1_jinaai_jina-clip-v1_seg_2x2                        |   26.133 | 18.551 |       0 |      0 |      0 |       0 |    0 |        0 |      0 |        0 |
-| llava-interleave_llava-hf_llava-interleave-qwen-0.5b-hf_seg_2x2 |    0.2   |  0.924 |       0 |      0 |      0 |       0 |    0 |        0 |      0 |        0 |
-| siglip_google_siglip-so400m-patch14-384_seg_2x2                 |   33.7   | 22.395 |       0 |      0 |      0 |       0 |    0 |        0 |      0 |        0 |
-| vit_google_vit-base-patch16-224-in21k_seg_2x2                   |    0.667 |  0.407 |       0 |      0 |      0 |       0 |    0 |        0 |      0 |        0 |
+| Model                                                           |   ArxivQ |   DocQ |   InfoQ |   TabF |   TATQ |   Shift |     AI |   Energy |   Gov. |   Health |
+|:----------------------------------------------------------------|---------:|-------:|--------:|-------:|-------:|--------:|-------:|---------:|-------:|---------:|
+| blip2-flan-t5-xl_seg_2x2                                        |    0.633 |  0.517 |   0.371 |  3.095 |  0.749 |   0     |  0     |    0     |  0     |    0     |
+| blip_Salesforce_blip-vqa-base_seg_2x2                           |    0.333 |  0.333 |   0.202 |  3.095 |  0.597 |   0     |  0     |    0     |  0     |    0     |
+| clip_openai_clip-vit-base-patch32_seg_2x2                       |    6.1   |  3.769 |  30.938 |  6.607 |  2.42  |   4.333 |  5.333 |   19.333 |  6.333 |   11.333 |
+| jina-clip-v1_jinaai_jina-clip-v1_seg_2x2                        |   26.133 | 18.551 |  44.939 | 21.786 | 14.085 |  17.167 | 44.833 |   46.167 | 53.5   |   49.5   |
+| llava-interleave_llava-hf_llava-interleave-qwen-0.5b-hf_seg_2x2 |    0.2   |  0.924 |   0     |  0     |  0     |   0     |  0     |    0     |  0     |    0     |
+| siglip_google_siglip-so400m-patch14-384_seg_2x2                 |   33.7   | 22.395 |  56.579 | 35.893 | 18.348 |  15.167 | 49.833 |   49.167 |  0     |    0     |
+| vit_google_vit-base-patch16-224-in21k_seg_2x2                   |    0.667 |  0.407 |   0.371 |  2.798 |  0.749 |   0.333 |  0     |    0     |  0     |    1     |

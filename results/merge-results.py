@@ -6,7 +6,11 @@ import glob
 results_dir = "."
 
 # Datasets to merge
-target_datasets = ["arxivqa", "docvqa", "tabfquad", "tatdqa"]
+target_datasets = ["arxivqa", "docvqa", "infovqa", "tabfquad", "tatdqa", "shiftproject", 
+                   "syntheticDocQA_artificial_intelligence", 
+                   "syntheticDocQA_energy", 
+                   "syntheticDocQA_government_reports", 
+                   "syntheticDocQA_healthcare_industry"]
 
 def process_directories():
     # Process both normal and segmented directories
@@ -51,12 +55,12 @@ def merge_scan_model_results(model_path):
     for dataset in target_datasets:
         # For scan models, look deeper in subdirectories if needed
         # First try direct match in the model directory
-        pattern = os.path.join(model_path, f"vidore_{dataset}*metrics.json")
+        pattern = os.path.join(model_path, f"*{dataset}*metrics.json")
         matching_files = glob.glob(pattern)
         
         # If not found directly, try looking in subdirectories
         if not matching_files:
-            pattern = os.path.join(model_path, "**", f"vidore_{dataset}*metrics.json")
+            pattern = os.path.join(model_path, "**", f"*{dataset}*metrics.json")
             matching_files = glob.glob(pattern, recursive=True)
         
         if not matching_files:
