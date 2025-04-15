@@ -20,6 +20,8 @@ Performance Changes (After segmenting inputs)
 
 <!-- Include the result tables from ./exp2-results/ -->
 
+MAP@3 Results:
+
 | Model                                                           |   ArxivQ |   DocQ |   InfoQ |   TabF |   TATQ |   Shift |     AI |   Energy |   Gov. |   Health |
 |:----------------------------------------------------------------|---------:|-------:|--------:|-------:|-------:|--------:|-------:|---------:|-------:|---------:|
 | blip2-flan-t5-xl_seg_2x2                                        |    0.633 |  0.517 |   0.371 |  3.095 |  0.749 |   0     |  0     |    0     |  0     |    0     |
@@ -29,6 +31,8 @@ Performance Changes (After segmenting inputs)
 | llava-interleave_llava-hf_llava-interleave-qwen-0.5b-hf_seg_2x2 |    0.2   |  0.924 |   0     |  0     |  0     |   0     |  0     |    0     |  0     |    0     |
 | siglip_google_siglip-so400m-patch14-384_seg_2x2                 |   33.7   | 22.395 |  56.579 | 35.893 | 18.348 |  15.167 | 49.833 |   49.167 |  0     |    0     |
 | vit_google_vit-base-patch16-224-in21k_seg_2x2                   |    0.667 |  0.407 |   0.371 |  2.798 |  0.749 |   0.333 |  0     |    0     |  0     |    1     |
+
+MAP@5 Results:
 
 | Model                                                           |   ArxivQ |   DocQ |   InfoQ |   TabF |   TATQ |   Shift |     AI |   Energy |   Gov. |   Health |
 |:----------------------------------------------------------------|---------:|-------:|--------:|-------:|-------:|--------:|-------:|---------:|-------:|---------:|
@@ -40,6 +44,8 @@ Performance Changes (After segmenting inputs)
 | siglip_google_siglip-so400m-patch14-384_seg_2x2                 |   35.26  | 23.825 |  58.553 | 38.25  | 19.587 |  15.867 | 51.383 |   52.417 |  0     |    0     |
 | vit_google_vit-base-patch16-224-in21k_seg_2x2                   |    0.807 |  0.407 |   0.503 |  3.173 |  0.88  |   0.333 |  0.2   |    0     |  0.45  |    1     |
 
+NDCG@3 Results:
+
 | Model                                                           |   ArxivQ |   DocQ |   InfoQ |   TabF |   TATQ |   Shift |     AI |   Energy |   Gov. |   Health |
 |:----------------------------------------------------------------|---------:|-------:|--------:|-------:|-------:|--------:|-------:|---------:|-------:|---------:|
 | blip2-flan-t5-xl_seg_2x2                                        |    0.726 |  0.554 |   0.431 |  3.673 |  0.868 |   0     |  0     |    0     |  0     |    0     |
@@ -49,6 +55,8 @@ Performance Changes (After segmenting inputs)
 | llava-interleave_llava-hf_llava-interleave-qwen-0.5b-hf_seg_2x2 |    0.2   |  1.027 |   0     |  0     |  0     |   0     |  0     |    0     |  0     |    0     |
 | siglip_google_siglip-so400m-patch14-384_seg_2x2                 |   35.512 | 23.767 |  59.213 | 39.222 | 19.499 |  16.417 | 53.964 |   51.94  |  0     |    0     |
 | vit_google_vit-base-patch16-224-in21k_seg_2x2                   |    0.752 |  0.472 |   0.431 |  3.27  |  0.868 |   0.5   |  0     |    0     |  0     |    1     |
+
+NDCG@5 Results:
 
 | Model                                                           |   ArxivQ |   DocQ |   InfoQ |   TabF |   TATQ |   Shift |     AI |   Energy |   Gov. |   Health |
 |:----------------------------------------------------------------|---------:|-------:|--------:|-------:|-------:|--------:|-------:|---------:|-------:|---------:|
